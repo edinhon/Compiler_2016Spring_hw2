@@ -36,11 +36,16 @@ program:	statement program
 statement:	declare
 
 declare:	TYPE declare_ID ';'
+		|	KEY_CONST TYPE declare_const ';'
 
 declare_ID:	scalar
 		|	array
 		|	scalar ',' declare_ID
 		|	array ',' declare_ID
+
+declare_const:
+			ID '=' expr
+		|	ID '=' expr ',' declare_const
 		
 scalar:		ID
 		|	ID '=' expr
