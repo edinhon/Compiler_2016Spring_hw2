@@ -32,49 +32,88 @@ extern char* yytext;
 %%
 
 program:	statement program
+		;
+		
+program_in_func:
+			statement_in_func program_in_func
+		;
 
 statement:	declare
+		|	func_invocation ';'
+		|	var '=' expr ';'
+		;
+
+statement_in_func:	
+			declare_in_func
+		|	func_invocation ';'
+		;
 
 declare:	TYPE declare_ID ';'
 		|	KEY_CONST TYPE declare_const ';'
-		|	TYPE declare_function ';'
-		|	TYPE_VOID declare_function ';'
+		|	TYPE declare_function
+		|	TYPE_VOID declare_function
+		;
+
+declare_in_func:	
+			TYPE declare_ID ';'
+		|	KEY_CONST TYPE declare_const ';'
+		;
 
 declare_ID:	scalar
 		|	array
 		|	scalar ',' declare_ID
 		|	array ',' declare_ID
+		;
 
 declare_const:
 			ID '=' expr
 		|	ID '=' expr ',' declare_const
+		;
 
 declare_function:
-			ID '(' ')'
-		|	ID '(' paras ')'
-		
-paras:		para
-		|	para  ',' paras
-
-para:		TYPE ID
-		|	TYPE ID arr_state_index
+			ID '(' ')' ';'
+		|	ID '(' paras ')' ';'
+		|	ID '(' ')' '{' '}'
+		|	ID '(' paras ')' '{' '}'
+		|	ID '(' ')' '{' program_in_func '}'
+		|	ID '(' paras ')' '{' program_in_func '}'
+		;
 		
 scalar:		ID
 		|	ID '=' expr
+		;
 		
 array:		ID arr_state_index
 		|	ID arr_state_index '=' '{' arr_content '}'
 		|	ID arr_state_index '=' '{' '}'
+		;
 
 arr_state_index:	
 			'[' INT ']'
 		|	'[' INT ']' arr_state_index
+		;
 
 arr_content:
-			expr
-		|	expr ',' arr_content
+			exprs
+		;
 
-expr: 		ID arr_expr_index
+paras:		para
+		|	para  ',' paras
+		;
+
+para:		TYPE ID
+		|	TYPE ID arr_state_index
+		;
+
+var:		ID
+		|	ID arr_expr_index
+		;
+		
+exprs:		expr
+		|	expr ',' exprs
+		;
+
+expr: 		var
 		|	ID OPER_PP
 		|	ID OPER_SS
 		|	'-' expr %prec UMINUS
@@ -88,8 +127,8 @@ expr: 		ID arr_expr_index
 		|	expr OPER_AA expr
 		|	expr OPER_OO expr
 		|	'(' expr ')'
-		|	ID
 		|	val
+		;
 
 val:		SCI
 		|	INT
@@ -99,13 +138,19 @@ val:		SCI
 		|	KEY_NULL
 		|	KEY_TRUE
 		|	KEY_FALSE
+		;
 
 arr_expr_index: 
 			'[' expr ']'
 		| 	'[' expr ']' arr_expr_index
+		;
 
-
-
+func_invocation:
+			ID '(' ')'
+		|	ID '(' exprs ')'
+		|	var '=' ID '(' ')'
+		|	var '=' ID '(' exprs ')'
+		;
 
 
 %%
