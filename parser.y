@@ -31,15 +31,33 @@ extern char* yytext;
 
 %%
 
-program:	program statement
+program:	statement program
 
-statement:	scalar
+statement:	declare
 
-scalar:		TYPE ID '=' expr ';'
+declare:	TYPE declare_ID ';'
 
-array:		
+declare_ID:	scalar
+		|	array
+		|	scalar ',' declare_ID
+		|	array ',' declare_ID
+		
+scalar:		ID
+		|	ID '=' expr
+		
+array:		ID arr_state_index
+		|	ID arr_state_index '=' '{' arr_content '}'
+		|	ID arr_state_index '=' '{' '}'
 
-expr: 		ID arr_index
+arr_state_index:	
+			'[' INT ']'
+		|	'[' INT ']' arr_state_index
+
+arr_content:
+			expr
+		|	expr ',' arr_content
+
+expr: 		ID arr_expr_index
 		|	ID OPER_PP
 		|	ID OPER_SS
 		|	'-' expr %prec UMINUS
@@ -65,8 +83,9 @@ val:		SCI
 		|	KEY_TRUE
 		|	KEY_FALSE
 
-arr_index: 	'[' expr ']'
-		| 	'[' expr ']' arr_index
+arr_expr_index: 
+			'[' expr ']'
+		| 	'[' expr ']' arr_expr_index
 
 
 
