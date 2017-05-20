@@ -39,6 +39,11 @@ program_in_func:
 			statement_in_func
 		|	statement_in_func program_in_func
 		;
+		
+program_in_case:
+			statement_in_case
+		|	statement_in_case program_in_case
+		;
 
 statement:	declare
 		|	func_invocation ';'
@@ -48,6 +53,16 @@ statement:	declare
 statement_in_func:	
 			declare_in_func
 		|	func_invocation ';'
+		|	simple_statement
+		|	if_else_statement
+		|	switch_statement
+		|	KEY_BREAK ';'
+		|	KEY_CONTINUE ';'
+		|	return_statement
+		;
+		
+statement_in_case:	
+			func_invocation ';'
 		|	simple_statement
 		|	if_else_statement
 		|	switch_statement
@@ -137,6 +152,8 @@ if_else_statement:
 switch_statement:
 			KEY_SWTICH '(' ID ')' '{' case_statements '}'
 		|	KEY_SWTICH '(' ID ')' '{' case_statements default_statement '}'
+		|	KEY_SWTICH '(' ID ')' '{' program_in_func case_statements '}'
+		|	KEY_SWTICH '(' ID ')' '{' program_in_func case_statements default_statement '}'
 		;
 		
 case_const:	INT
@@ -144,14 +161,14 @@ case_const:	INT
 		;
 		
 case_statements:
-			KEY_CASE case_const ':' program_in_func
-		|	KEY_CASE case_const ':' program_in_func case_statements
+			KEY_CASE case_const ':' program_in_case
+		|	KEY_CASE case_const ':' program_in_case case_statements
 		|	KEY_CASE case_const ':'
 		|	KEY_CASE case_const ':' case_statements
 		;
 
 default_statement:
-			KEY_DEFAULT ':' program_in_func
+			KEY_DEFAULT ':' program_in_case
 		|	KEY_DEFAULT ':'
 		;
 		
