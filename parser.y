@@ -37,6 +37,8 @@ statement:	declare
 
 declare:	TYPE declare_ID ';'
 		|	KEY_CONST TYPE declare_const ';'
+		|	TYPE declare_function ';'
+		|	TYPE_VOID declare_function ';'
 
 declare_ID:	scalar
 		|	array
@@ -46,6 +48,16 @@ declare_ID:	scalar
 declare_const:
 			ID '=' expr
 		|	ID '=' expr ',' declare_const
+
+declare_function:
+			ID '(' ')'
+		|	ID '(' paras ')'
+		
+paras:		para
+		|	para  ',' paras
+
+para:		TYPE ID
+		|	TYPE ID arr_state_index
 		
 scalar:		ID
 		|	ID '=' expr
