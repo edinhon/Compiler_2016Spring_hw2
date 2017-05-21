@@ -1,10 +1,12 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 extern int num_line;
 extern char srcBuf[2048];
 extern char* yytext;
 
+bool global_flag = false;
 %}
 
 %start program
@@ -54,8 +56,11 @@ statement_in_func:
 			declare_in_func
 		|	func_invocation ';'
 		|	simple_statement
+		|	compound_statement
 		|	if_else_statement
 		|	switch_statement
+		|	while_statement
+		|	for_statement
 		|	KEY_BREAK ';'
 		|	KEY_CONTINUE ';'
 		|	return_statement
@@ -64,8 +69,11 @@ statement_in_func:
 statement_in_case:	
 			func_invocation ';'
 		|	simple_statement
+		|	compound_statement
 		|	if_else_statement
 		|	switch_statement
+		|	while_statement
+		|	for_statement
 		|	KEY_BREAK ';'
 		|	KEY_CONTINUE ';'
 		|	return_statement
@@ -96,10 +104,10 @@ declare_const:
 declare_function:
 			ID '(' ')' ';'
 		|	ID '(' paras ')' ';'
-		|	ID '(' ')' '{' '}'
-		|	ID '(' paras ')' '{' '}'
-		|	ID '(' ')' '{' program_in_func '}'
-		|	ID '(' paras ')' '{' program_in_func '}'
+		|	ID '(' ')' '{' '}'							{global_flag = true;} 
+		|	ID '(' paras ')' '{' '}'					{global_flag = true;} 
+		|	ID '(' ')' '{' program_in_func '}'			{global_flag = true;} 
+		|	ID '(' paras ')' '{' program_in_func '}'	{global_flag = true;} 
 		;
 		
 scalar:		ID
@@ -136,6 +144,10 @@ simple_statement:
 			var '=' expr ';'
 		;
 
+compound_statement:
+			'{' program_in_func '}'
+		|	'{' '}'
+		
 if_else_statement:
 			KEY_IF '(' expr ')' '{' program_in_func '}' 
 		KEY_ELSE '{' program_in_func '}'
@@ -171,6 +183,49 @@ default_statement:
 			KEY_DEFAULT ':' program_in_case
 		|	KEY_DEFAULT ':'
 		;
+		
+while_statement:
+			KEY_WHILE '(' expr ')' '{' program_in_func '}'
+		|	KEY_WHILE '(' expr ')' '{' '}'
+		|	KEY_DO '{' program_in_func '}' KEY_WHILE '(' expr ')' ';'
+		|	KEY_DO '{' '}' KEY_WHILE '(' expr ')' ';'
+		
+for_statement:
+			KEY_FOR '(' exprs ';' exprs ';' exprs ')' '{' program_in_func '}'
+		|	KEY_FOR '(' exprs ';' exprs ';' exprs ')' '{' '}'
+		
+		|	KEY_FOR '(' exprs ';' ';' exprs ')' '{' program_in_func '}'
+		|	KEY_FOR '(' exprs ';' ';' exprs ')' '{' '}'
+		
+		|	KEY_FOR '(' exprs ';' exprs ';' ')' '{' program_in_func '}'
+		|	KEY_FOR '(' exprs ';' exprs ';' ')' '{' '}'
+		
+		|	KEY_FOR '(' exprs ';' ';' ')' '{' program_in_func '}'
+		|	KEY_FOR '(' exprs ';' ';' ')' '{' '}'
+		
+		|	KEY_FOR '(' ';' exprs ';' exprs ')' '{' program_in_func '}'
+		|	KEY_FOR '(' ';' exprs ';' exprs ')' '{' '}'
+		
+		|	KEY_FOR '(' ';' ';' exprs ')' '{' program_in_func '}'
+		|	KEY_FOR '(' ';' ';' exprs ')' '{' '}'
+		
+		|	KEY_FOR '(' ';' exprs ';' ')' '{' program_in_func '}'
+		|	KEY_FOR '(' ';' exprs ';' ')' '{' '}'
+		
+		|	KEY_FOR '(' ';' ';' ')' '{' program_in_func '}'
+		|	KEY_FOR '(' ';' ';' ')' '{' '}'
+		
+		|	KEY_FOR '(' var '=' exprs ';' exprs ';' exprs ')' '{' program_in_func '}'
+		|	KEY_FOR '(' var '=' exprs ';' exprs ';' exprs ')' '{' '}'
+		
+		|	KEY_FOR '(' var '=' exprs ';' ';' exprs ')' '{' program_in_func '}'
+		|	KEY_FOR '(' var '=' exprs ';' ';' exprs ')' '{' '}'
+		
+		|	KEY_FOR '(' var '=' exprs ';' exprs ';' ')' '{' program_in_func '}'
+		|	KEY_FOR '(' var '=' exprs ';' exprs ';' ')' '{' '}'
+		
+		|	KEY_FOR '(' var '=' exprs ';' ';' ')' '{' program_in_func '}'
+		|	KEY_FOR '(' var '=' exprs ';' ';' ')' '{' '}'
 		
 return_statement:
 			KEY_RETURN expr ';'
@@ -223,11 +278,12 @@ func_invocation:
 
 int main(void){
 	yyparse();
+	if(!global_flag) yyerror("");
 	fprintf(stdout, "%s\n", "No syntax error!");
 	return 0;
 }
 
-int yyerror(char *s){
+int yyerror(char *msg){
 	fprintf( stderr, "*** Error at line %d: %s\n", num_line, srcBuf );
 	fprintf( stderr, "\n" );
 	fprintf( stderr, "Unmatched token: %s\n", yytext );
