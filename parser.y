@@ -54,7 +54,6 @@ statement:	declare
 
 statement_in_func:	
 			declare_in_func
-		|	func_invocation ';'
 		|	simple_statement
 		|	compound_statement
 		|	if_else_statement
@@ -64,11 +63,11 @@ statement_in_func:
 		|	KEY_BREAK ';'
 		|	KEY_CONTINUE ';'
 		|	return_statement
+		|	expr ';'
 		;
 		
 statement_in_case:	
-			func_invocation ';'
-		|	simple_statement
+			simple_statement
 		|	compound_statement
 		|	if_else_statement
 		|	switch_statement
@@ -77,6 +76,7 @@ statement_in_case:
 		|	KEY_BREAK ';'
 		|	KEY_CONTINUE ';'
 		|	return_statement
+		|	expr ';'
 		;
 
 declare:	TYPE declare_ID ';'
@@ -129,7 +129,7 @@ arr_content:
 		;
 
 paras:		para
-		|	para  ',' paras
+		|	para ',' paras
 		;
 
 para:		TYPE ID
@@ -147,6 +147,7 @@ simple_statement:
 compound_statement:
 			'{' program_in_func '}'
 		|	'{' '}'
+		;
 		
 if_else_statement:
 			KEY_IF '(' expr ')' '{' program_in_func '}' 
@@ -157,6 +158,7 @@ if_else_statement:
 		KEY_ELSE '{' '}'
 		|	KEY_IF '(' expr ')' '{' '}' 
 		KEY_ELSE '{' '}'
+		
 		|	KEY_IF '(' expr ')' '{' program_in_func '}'
 		|	KEY_IF '(' expr ')' '{' '}'
 		;
@@ -189,46 +191,43 @@ while_statement:
 		|	KEY_WHILE '(' expr ')' '{' '}'
 		|	KEY_DO '{' program_in_func '}' KEY_WHILE '(' expr ')' ';'
 		|	KEY_DO '{' '}' KEY_WHILE '(' expr ')' ';'
+		;
 		
 for_statement:
-			KEY_FOR '(' exprs ';' exprs ';' exprs ')' '{' program_in_func '}'
-		|	KEY_FOR '(' exprs ';' exprs ';' exprs ')' '{' '}'
+			KEY_FOR '(' for_paras ';' expr ';' for_paras ')' '{' program_in_func '}'
+		|	KEY_FOR '(' for_paras ';' expr ';' for_paras ')' '{' '}'
 		
-		|	KEY_FOR '(' exprs ';' ';' exprs ')' '{' program_in_func '}'
-		|	KEY_FOR '(' exprs ';' ';' exprs ')' '{' '}'
+		|	KEY_FOR '(' for_paras ';' ';' for_paras ')' '{' program_in_func '}'
+		|	KEY_FOR '(' for_paras ';' ';' for_paras ')' '{' '}'
 		
-		|	KEY_FOR '(' exprs ';' exprs ';' ')' '{' program_in_func '}'
-		|	KEY_FOR '(' exprs ';' exprs ';' ')' '{' '}'
+		|	KEY_FOR '(' for_paras ';' expr ';' ')' '{' program_in_func '}'
+		|	KEY_FOR '(' for_paras ';' expr ';' ')' '{' '}'
 		
-		|	KEY_FOR '(' exprs ';' ';' ')' '{' program_in_func '}'
-		|	KEY_FOR '(' exprs ';' ';' ')' '{' '}'
+		|	KEY_FOR '(' for_paras ';' ';' ')' '{' program_in_func '}'
+		|	KEY_FOR '(' for_paras ';' ';' ')' '{' '}'
 		
-		|	KEY_FOR '(' ';' exprs ';' exprs ')' '{' program_in_func '}'
-		|	KEY_FOR '(' ';' exprs ';' exprs ')' '{' '}'
+		|	KEY_FOR '(' ';' expr ';' for_paras ')' '{' program_in_func '}'
+		|	KEY_FOR '(' ';' expr ';' for_paras ')' '{' '}'
 		
-		|	KEY_FOR '(' ';' ';' exprs ')' '{' program_in_func '}'
-		|	KEY_FOR '(' ';' ';' exprs ')' '{' '}'
+		|	KEY_FOR '(' ';' ';' for_paras ')' '{' program_in_func '}'
+		|	KEY_FOR '(' ';' ';' for_paras ')' '{' '}'
 		
-		|	KEY_FOR '(' ';' exprs ';' ')' '{' program_in_func '}'
-		|	KEY_FOR '(' ';' exprs ';' ')' '{' '}'
+		|	KEY_FOR '(' ';' expr ';' ')' '{' program_in_func '}'
+		|	KEY_FOR '(' ';' expr ';' ')' '{' '}'
 		
 		|	KEY_FOR '(' ';' ';' ')' '{' program_in_func '}'
 		|	KEY_FOR '(' ';' ';' ')' '{' '}'
+		;
 		
-		|	KEY_FOR '(' var '=' exprs ';' exprs ';' exprs ')' '{' program_in_func '}'
-		|	KEY_FOR '(' var '=' exprs ';' exprs ';' exprs ')' '{' '}'
-		
-		|	KEY_FOR '(' var '=' exprs ';' ';' exprs ')' '{' program_in_func '}'
-		|	KEY_FOR '(' var '=' exprs ';' ';' exprs ')' '{' '}'
-		
-		|	KEY_FOR '(' var '=' exprs ';' exprs ';' ')' '{' program_in_func '}'
-		|	KEY_FOR '(' var '=' exprs ';' exprs ';' ')' '{' '}'
-		
-		|	KEY_FOR '(' var '=' exprs ';' ';' ')' '{' program_in_func '}'
-		|	KEY_FOR '(' var '=' exprs ';' ';' ')' '{' '}'
+for_paras:	expr
+		|	var '=' expr
+		|	expr ',' for_paras
+		|	var '=' expr ',' for_paras
+		;
 		
 return_statement:
 			KEY_RETURN expr ';'
+		;
 		
 exprs:		expr
 		|	expr ',' exprs
